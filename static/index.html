@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClipClean — Upload. Process. Download.</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+</head>
+<body>
+  <div class="app-container">
+
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <h1 class="wordmark">Clip<span class="wordmark-accent">Clean</span></h1>
+        <p class="subtitle">Upload. Process. Download.</p>
+      </div>
+      <div class="engine-status" id="engineStatus">
+        <span class="status-dot" id="statusDot"></span>
+        <span class="status-label" id="statusLabel">Checking engine…</span>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+      <!-- Upload Section -->
+      <section class="card upload-section" id="uploadSection">
+        <div class="drop-zone" id="dropZone">
+          <div class="drop-zone-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <p class="drop-zone-text">Drag &amp; drop your video here</p>
+          <p class="drop-zone-hint">or</p>
+          <label class="btn btn-secondary browse-btn">
+            Browse Files
+            <input type="file" id="fileInput" accept=".mp4,.mov,.mkv,.webm" hidden>
+          </label>
+          <p class="drop-zone-formats">MP4, MOV, MKV, WEBM — up to 1 GB</p>
+        </div>
+
+        <!-- File Info -->
+        <div class="file-info" id="fileInfo" hidden>
+          <div class="file-info-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="23 7 16 12 23 17 23 7"/>
+              <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+            </svg>
+          </div>
+          <div class="file-info-details">
+            <span class="file-name" id="fileName"></span>
+            <span class="file-meta" id="fileMeta"></span>
+          </div>
+          <button class="btn-icon file-remove" id="fileRemove" title="Remove file">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </section>
+
+      <!-- Advanced Options -->
+      <section class="card advanced-section" id="advancedSection" hidden>
+        <button class="advanced-toggle" id="advancedToggle" type="button" aria-expanded="false">
+          <svg class="toggle-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+          <span>Advanced Options</span>
+        </button>
+        <div class="advanced-body" id="advancedBody">
+          <!-- Split Video into Parts (Divide) -->
+          <div class="option-group">
+            <label class="option-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <line x1="12" y1="3" x2="12" y2="21"/>
+              </svg>
+              Divide Video into Parts (Part 1, Part 2, etc.)
+            </label>
+            <div class="option-row">
+              <div class="input-group" style="flex: 2;">
+                <label for="splitModeSelect">Split Mode</label>
+                <select id="splitModeSelect" class="input">
+                  <option value="none">Do not split (Single Video)</option>
+                  <option value="parts_2">Split into 2 Equal Parts (Part 1 &amp; Part 2)</option>
+                  <option value="parts_3">Split into 3 Equal Parts (Part 1, 2 &amp; 3)</option>
+                  <option value="parts_4">Split into 4 Equal Parts (Part 1 to 4)</option>
+                  <option value="parts_5">Split into 5 Equal Parts (Part 1 to 5)</option>
+                  <option value="dur_60">Split into 60-Second Reels (1 Minute Each)</option>
+                  <option value="dur_30">Split into 30-Second Shorts</option>
+                  <option value="custom_parts">Custom Number of Parts...</option>
+                </select>
+              </div>
+              <div class="input-group" id="customPartsGroup" style="display: none; flex: 1;">
+                <label for="customPartsInput">Number of Parts</label>
+                <input type="number" id="customPartsInput" class="input" min="2" max="20" placeholder="e.g. 6">
+              </div>
+            </div>
+            <p class="drop-zone-formats" style="margin-top: 6px; text-align: left;">
+              ClipClean will automatically divide the video into clean MP4 parts and provide both individual downloads and a single ZIP file.
+            </p>
+          </div>
+
+          <!-- Extract / Shorten Clip with Dropdowns & Manual Switch -->
+          <div class="option-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <label class="option-label" style="margin-bottom: 0;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+                  <line x1="7" y1="2" x2="7" y2="22"></line>
+                  <line x1="17" y1="2" x2="17" y2="22"></line>
+                  <line x1="2" y1="12" x2="22" y2="12"></line>
+                  <line x1="2" y1="7" x2="7" y2="7"></line>
+                  <line x1="2" y1="17" x2="7" y2="17"></line>
+                  <line x1="17" y1="17" x2="22" y2="17"></line>
+                  <line x1="17" y1="7" x2="22" y2="7"></line>
+                </svg>
+                Extract Specific Clip (e.g. 1 Minute)
+              </label>
+              <div class="mode-switch-group">
+                <button type="button" class="btn btn-xs active" id="btnModeDropdown">Dropdowns</button>
+                <button type="button" class="btn btn-xs" id="btnModeManual">Manual</button>
+              </div>
+            </div>
+
+            <!-- Dropdown Mode (Default) -->
+            <div id="clipDropdownControls" class="option-row" style="gap: 12px;">
+              <div class="input-group" style="flex: 1;">
+                <label>Start (Min : Sec)</label>
+                <div style="display: flex; gap: 6px;">
+                  <select id="clipStartMin" class="input" style="flex: 1;"></select>
+                  <select id="clipStartSec" class="input" style="flex: 1;"></select>
+                </div>
+              </div>
+              <div class="input-group" style="flex: 1;">
+                <label>End (Min : Sec)</label>
+                <div style="display: flex; gap: 6px;">
+                  <select id="clipEndMin" class="input" style="flex: 1;"></select>
+                  <select id="clipEndSec" class="input" style="flex: 1;"></select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Manual Input Mode -->
+            <div id="clipManualControls" class="option-row" style="display: none;">
+              <div class="input-group">
+                <label for="clipStart">Start Time (HH:MM:SS or SS)</label>
+                <input type="text" id="clipStart" class="input" placeholder="00:00:00">
+              </div>
+              <div class="input-group">
+                <label for="clipEnd">End Time (HH:MM:SS or SS)</label>
+                <input type="text" id="clipEnd" class="input" placeholder="00:01:00">
+              </div>
+            </div>
+
+            <!-- Quick Presets -->
+            <div style="margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap;">
+              <button type="button" class="btn btn-secondary btn-sm" id="preset60sBtn">⚡ 1 Minute Reel (00:00 - 01:00)</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="preset30sBtn">⚡ 30s Short (00:00 - 00:30)</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="clearClipBtn">Reset Clip</button>
+            </div>
+          </div>
+
+          <!-- Trim -->
+          <div class="option-group">
+            <label class="option-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/>
+                <line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/>
+                <line x1="8.12" y1="8.12" x2="12" y2="12"/>
+              </svg>
+              Trim Video
+            </label>
+            <div class="option-row">
+              <div class="input-group">
+                <label for="trimStart">Start</label>
+                <input type="text" id="trimStart" class="input" placeholder="00:00:00">
+              </div>
+              <div class="input-group">
+                <label for="trimEnd">End</label>
+                <input type="text" id="trimEnd" class="input" placeholder="00:05:30">
+              </div>
+            </div>
+          </div>
+
+          <!-- Replace Audio -->
+          <div class="option-group">
+            <label class="option-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+              </svg>
+              Replace Audio
+            </label>
+            <div class="option-row">
+              <label class="btn btn-secondary btn-sm audio-upload-btn">
+                Choose Audio File
+                <input type="file" id="audioInput" accept="audio/*" hidden>
+              </label>
+              <span class="audio-file-name" id="audioFileName">No file chosen</span>
+              <button class="btn-icon audio-remove" id="audioRemove" title="Remove audio" hidden>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Mute Interval -->
+          <div class="option-group">
+            <label class="option-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                <line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+              </svg>
+              Mute Interval
+            </label>
+            <div class="option-row">
+              <div class="input-group">
+                <label for="muteStart">Start</label>
+                <input type="text" id="muteStart" class="input" placeholder="00:00:10">
+              </div>
+              <div class="input-group">
+                <label for="muteEnd">End</label>
+                <input type="text" id="muteEnd" class="input" placeholder="00:00:30">
+              </div>
+            </div>
+          </div>
+
+          <!-- Add Subtitles -->
+          <div class="option-group">
+            <label class="option-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="18" rx="2"/>
+                <line x1="7" y1="15" x2="17" y2="15"/><line x1="7" y1="11" x2="13" y2="11"/>
+              </svg>
+              Add Subtitles
+            </label>
+            <div class="option-row">
+              <label class="btn btn-secondary btn-sm srt-upload-btn">
+                Choose SRT File
+                <input type="file" id="srtInput" accept=".srt" hidden>
+              </label>
+              <span class="srt-file-name" id="srtFileName">No file chosen</span>
+              <button class="btn-icon srt-remove" id="srtRemove" title="Remove subtitles" hidden>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Process Button -->
+      <div class="action-bar" id="actionBar" hidden>
+        <button class="btn btn-primary btn-lg" id="processBtn" disabled>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+          Process Video
+        </button>
+      </div>
+
+      <!-- Processing Status -->
+      <section class="card processing-section" id="processingSection" hidden>
+        <h2 class="section-title">Processing</h2>
+        <div class="elapsed-time" id="elapsedTime">Elapsed: 0s</div>
+
+        <!-- Progress Bar -->
+        <div class="progress-bar-container">
+          <div class="progress-bar" id="progressBar">
+            <div class="progress-bar-fill" id="progressBarFill" style="width: 0%"></div>
+          </div>
+          <span class="progress-percent" id="progressPercent">0%</span>
+        </div>
+
+        <!-- Status Steps -->
+        <div class="status-steps" id="statusSteps">
+          <div class="status-step" data-step="uploading">
+            <span class="step-indicator"></span>
+            <span class="step-label">Uploading</span>
+          </div>
+          <div class="status-step" data-step="validating">
+            <span class="step-indicator"></span>
+            <span class="step-label">Validating</span>
+          </div>
+          <div class="status-step" data-step="analyzing">
+            <span class="step-indicator"></span>
+            <span class="step-label">Analyzing</span>
+          </div>
+          <div class="status-step" data-step="processing">
+            <span class="step-indicator"></span>
+            <span class="step-label">Processing</span>
+          </div>
+          <div class="status-step" data-step="finalizing">
+            <span class="step-indicator"></span>
+            <span class="step-label">Finalizing</span>
+          </div>
+          <div class="status-step" data-step="completed">
+            <span class="step-indicator"></span>
+            <span class="step-label">Completed</span>
+          </div>
+        </div>
+
+        <p class="status-message" id="statusMessage">Preparing…</p>
+      </section>
+
+      <!-- Error Display -->
+      <section class="card error-section" id="errorSection" hidden>
+        <div class="error-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+          </svg>
+        </div>
+        <p class="error-title">Processing Failed</p>
+        <p class="error-message" id="errorMessage"></p>
+        <button class="btn btn-secondary" id="errorRetryBtn">Try Again</button>
+      </section>
+
+      <!-- Result Section -->
+      <section class="card result-section" id="resultSection" hidden>
+        <div class="result-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <h2 class="result-title">Processing Complete!</h2>
+        <div class="result-details">
+          <div class="result-item">
+            <span class="result-label">File</span>
+            <span class="result-value" id="resultFilename"></span>
+          </div>
+          <div class="result-item">
+            <span class="result-label">Duration</span>
+            <span class="result-value" id="resultDuration"></span>
+          </div>
+          <div class="result-item">
+            <span class="result-label">Size</span>
+            <span class="result-value" id="resultSize"></span>
+          </div>
+        </div>
+
+        <!-- Divided Parts Section (shown when split is used) -->
+        <div id="multiPartSection" style="display: none; width: 100%; margin: 16px 0;">
+          <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 8px; color: #f1f5f9; text-align: left;">
+            Divided Parts:
+          </h3>
+          <div id="partsList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        </div>
+
+        <div class="result-actions">
+          <button class="btn btn-primary btn-lg" id="downloadBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Download Video
+          </button>
+          <button class="btn btn-secondary" id="processAnotherBtn">Process Another Video</button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p class="disclaimer">
+        &copy; 2024 ClipClean. All uploaded content is processed locally and deleted after download.
+        By using this service, you agree that you have the rights to process the uploaded media.
+      </p>
+    </footer>
+
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
